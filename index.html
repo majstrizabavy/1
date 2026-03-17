@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MAJSTRI ZÁBAVY — MZ ORBIT × MAJSTROVSKÝ MOZOG</title>
+
+  <!--
+    ============================================================
+    FONTY — načítavajú sa z Google Fonts (potrebný internet)
+    Rajdhani  = hlavný font textu
+    Orbitron  = nadpisy a logá
+    Space Mono = technické texty, labely
+    Syne      = Mozog karta
+    ============================================================
+  -->
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Orbitron:wght@400;700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;700;800;900&display=swap" rel="stylesheet">
+
+  <!--
+    ŠTÝLY — všetky farby, veľkosti, animácie
+    Chceš zmeniť dizajn? Otvor css/style.css
+  -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════
+     VLASTNÝ KURZOR
+     (bodka + kruh, animované v js/main.js)
+     ══════════════════════════════════════════════════════ -->
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- ══════════════════════════════════════════════════════
+     PLÁVAJÚCE PARTIKULE (dekorácia na pozadí)
+     ══════════════════════════════════════════════════════ -->
+<div class="particle" style="width:3px;height:3px;left:10%;top:80%;animation-delay:0s;animation-duration:8s;"></div>
+<div class="particle" style="width:2px;height:2px;left:25%;top:90%;animation-delay:1.5s;animation-duration:6s;background:var(--cyan)"></div>
+<div class="particle" style="width:4px;height:4px;left:70%;top:85%;animation-delay:3s;animation-duration:10s;"></div>
+<div class="particle" style="width:2px;height:2px;left:85%;top:75%;animation-delay:0.8s;animation-duration:7s;background:var(--pink)"></div>
+<div class="particle" style="width:3px;height:3px;left:45%;top:95%;animation-delay:2.2s;animation-duration:9s;"></div>
+
+<!-- ══════════════════════════════════════════════════════
+     PRECHODOVÝ OVERLAY
+     (čierny flash pri kliknutí na "Aktivovať Mozog")
+     ══════════════════════════════════════════════════════ -->
+<div id="mozog-transition">
+  <div class="transition-brain">🧠 AKTIVUJEM MOZOG...</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     TOAST NOTIFIKÁCIA
+     (malá správa dole po schválení plánu)
+     ══════════════════════════════════════════════════════ -->
+<div class="toast" id="toast">✓ Plán odoslaný Majstrom!</div>
+
+<!-- ══════════════════════════════════════════════════════
+     COMMAND BAR (⌘K alebo Ctrl+K)
+     Rýchle vyhľadávanie a navigácia
+     ══════════════════════════════════════════════════════ -->
+<div id="command-overlay">
+  <div class="command-box">
+    <div class="command-input-wrap">
+      <span class="command-icon">⌘</span>
+      <input type="text" id="command-input" placeholder="Hľadaj zónu, program, event..." autocomplete="off">
+      <span class="command-kbd">ESC</span>
+    </div>
+    <div class="command-results">
+      <div class="command-section-label">Navigácia</div>
+      <div class="command-item" onclick="navigateTo('orbit-section')">
+        <div class="cmd-item-icon">🌌</div>
+        <div class="cmd-item-text">
+          <div class="cmd-item-name">MZ ORBIT — Svet Zábavy</div>
+          <div class="cmd-item-desc">Interaktívna mapa zón a kategórií</div>
+        </div>
+        <span class="cmd-item-shortcut">→</span>
+      </div>
+      <div class="command-item" onclick="navigateTo('inspiracia')">
+        <div class="cmd-item-icon">🎬</div>
+        <div class="cmd-item-text">
+          <div class="cmd-item-name">Inšpirácia & Reels</div>
+          <div class="cmd-item-desc">Video galéria zážitkov</div>
+        </div>
+        <span class="cmd-item-shortcut">→</span>
+      </div>
+      <div class="command-item" onclick="navigateTo('rok')">
+        <div class="cmd-item-icon">📅</div>
+        <div class="cmd-item-text">
+          <div class="cmd-item-name">Rok Plný Zábavy</div>
+          <div class="cmd-item-desc">Plánovač eventov na celý rok</div>
+        </div>
+        <span class="cmd-item-shortcut">→</span>
+      </div>
+      <div class="command-item" onclick="navigateTo('projekty')">
+        <div class="cmd-item-icon">🚀</div>
+        <div class="cmd-item-text">
+          <div class="cmd-item-name">Projekty MZ</div>
+          <div class="cmd-item-desc">Naše vlajkové projekty a programy</div>
+        </div>
+        <span class="cmd-item-shortcut">→</span>
+      </div>
+      <div class="command-item" onclick="activateMozog()">
+        <div class="cmd-item-icon">🧠</div>
+        <div class="cmd-item-text">
+          <div class="cmd-item-name">MAJSTROVSKÝ MOZOG</div>
+          <div class="cmd-item-desc">AI Event Planner — navrhnúť dokonalý event</div>
+        </div>
+        <span class="cmd-item-shortcut">→</span>
+      </div>
+      <div class="command-item" onclick="navigateTo('kontakt')">
+        <div class="cmd-item-icon">✉️</div>
+        <div class="cmd-item-text">
+          <div class="cmd-item-name">Kontakt</div>
+          <div class="cmd-item-desc">Spojiť sa s tímom MZ</div>
+        </div>
+        <span class="cmd-item-shortcut">→</span>
+      </div>
+      <div class="command-section-label">Zóny</div>
+      <div class="command-item">
+        <div class="cmd-item-icon">⚡</div>
+        <div class="cmd-item-text">
+          <div class="cmd-item-name">EVENTY NA KĽÚČ</div>
+          <div class="cmd-item-desc">Kompletná produkcia podujatí</div>
+        </div>
+      </div>
+      <div class="command-item">
+        <div class="cmd-item-icon">🏒</div>
+        <div class="cmd-item-text">
+          <div class="cmd-item-name">MZ MOVE — Florbal & Šport</div>
+          <div class="cmd-item-desc">Aktívne zábavné programy</div>
+        </div>
+      </div>
+      <div class="command-item">
+        <div class="cmd-item-icon">💞</div>
+        <div class="cmd-item-text">
+          <div class="cmd-item-name">MZ LOVE — Zoznamka</div>
+          <div class="cmd-item-desc">Sociálne speed dating eventy</div>
+        </div>
+      </div>
+    </div>
+    <div class="command-footer">
+      <span>↑↓ naviguj</span>
+      <span>↵ otvor</span>
+      <span>ESC zatvor</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     NAVIGÁCIA (fixná lišta hore)
+     ══════════════════════════════════════════════════════ -->
+<nav id="navbar">
+  <a href="#home" class="nav-logo">MZ<span>·</span>ORBIT</a>
+  <ul class="nav-links">
+    <li><a href="#home">Domov</a></li>
+    <li><a href="#orbit-section">Svet Zábavy</a></li>
+    <li><a href="#inspiracia">Inšpirácia</a></li>
+    <li><a href="#rok">Rok Plný Zábavy</a></li>
+    <li><a href="#projekty">Projekty MZ</a></li>
+    <li><a href="#mozog-section">Mozog</a></li>
+    <li><a href="#kontakt">Kontakt</a></li>
+  </ul>
+  <button class="nav-search-btn" onclick="openCommand()" title="Hľadať (⌘K)">⌘</button>
+  <div class="nav-ham" onclick="toggleMobile()" id="hamBtn">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- Mobilné menu (zobrazí sa keď klikneš na hamburger) -->
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#home"         onclick="closeMobile()">Domov</a>
+  <a href="#orbit-section" onclick="closeMobile()">Svet Zábavy</a>
+  <a href="#inspiracia"   onclick="closeMobile()">Inšpirácia</a>
+  <a href="#rok"          onclick="closeMobile()">Rok Plný Zábavy</a>
+  <a href="#projekty"     onclick="closeMobile()">Projekty MZ</a>
+  <a href="#mozog-section" onclick="closeMobile()">Mozog</a>
+  <a href="#kontakt"      onclick="closeMobile()">Kontakt</a>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     1. HERO SEKCIA — Úvodná obrazovka
+     ══════════════════════════════════════════════════════ -->
+<section id="home">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-content">
+    <div class="hero-badge">
+      <div class="hero-badge-dot"></div>
+      Systém aktívny — Veliteľské centrum zábavy
+    </div>
+    <h1 class="hero-title">
+      <span class="line1">MAJSTRI</span>
+      <span class="line2">ZÁBAVY</span>
+    </h1>
+    <p class="hero-sub">Autorita Zábavy · MZ ORBIT · SK</p>
+    <div class="hero-cta">
+      <a href="#orbit-section" class="btn-primary"><span>🌌</span> Vstúpiť do Orbitu</a>
+      <a href="#kontakt"       class="btn-ghost"><span>⚡</span> Kontaktovať</a>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════
+     STATS BAR — Čísla (500+ eventov atd.)
+     ══════════════════════════════════════════════════════ -->
+<div class="stats-bar reveal">
+  <div class="stat-item">
+    <div class="stat-number">500+</div>
+    <div class="stat-label">Eventov</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-number">6</div>
+    <div class="stat-label">Zón Zábavy</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-number">12K+</div>
+    <div class="stat-label">Účastníkov</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-number">365</div>
+    <div class="stat-label">Dní v Roku</div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     2. ORBIT SEKCIA — Interaktívna mapa zón
+     Planéty sú generované dynamicky v js/orbit.js
+     ══════════════════════════════════════════════════════ -->
+<section id="orbit-section">
+  <div class="section-header reveal">
+    <div class="section-label-orbit">// INTERAKTÍVNA MAPA ZÓN //</div>
+    <h2 class="section-title">SVET ZÁBAVY</h2>
+    <div class="section-line"></div>
+    <p style="color:var(--grey);font-size:15px;margin-top:16px;letter-spacing:1px;">Prejdi myšou na planétu a objav svoju zónu</p>
+  </div>
+
+  <div class="orbit-container" id="orbitContainer">
+    <!-- Dekoratívne kruhy -->
+    <div class="orbit-ring orbit-ring-1"></div>
+    <div class="orbit-ring orbit-ring-2"></div>
+    <div class="orbit-ring orbit-ring-3"></div>
+
+    <!-- Stred orbitu — zobrazí sa pri hoveri na planétu -->
+    <div class="orbit-core" id="orbitCore">
+      <div class="orbit-core-glow"></div>
+      <div class="core-logo" id="coreLogo">MZ</div>
+      <div class="core-info" id="coreInfo">
+        <div class="core-desc" id="coreDesc"></div>
+        <button class="core-cta" id="coreCta">VSTÚPIŤ DO TEJTO ZÓNY</button>
+      </div>
+      <!-- Tlačidlo AKTIVOVAŤ MOZOG (pod logom MZ) -->
+      <div class="activate-btn-wrap">
+        <button class="activate-mozog-btn" id="activateMozogBtn" onclick="activateMozog()">
+          <span class="btn-brain-dot"></span>
+          AKTIVOVAŤ MOZOG
+        </button>
+      </div>
+    </div>
+
+    <!-- Planéty sú vložené sem dynamicky cez orbit.js -->
+    <div class="planets-wrapper" id="planetsWrapper"></div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════
+     3. INŠPIRÁCIA — Video reels galéria
+     ══════════════════════════════════════════════════════ -->
+<section id="inspiracia">
+  <div class="section-header reveal">
+    <div class="section-label-orbit">// GALÉRIA ZÁŽITKOV //</div>
+    <h2 class="section-title">INŠPIRÁCIA</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="reels-grid reveal">
+    <div class="reel-card">
+      <div class="reel-gradient"></div>
+      <div class="reel-noise"></div>
+      <div class="reel-geom"></div>
+      <div class="reel-play">▶</div>
+      <div class="reel-content">
+        <div class="reel-tag">#EventyNaKľúč</div>
+        <div class="reel-title">Korporátny Team-building 2024</div>
+      </div>
+    </div>
+    <div class="reel-card">
+      <div class="reel-gradient"></div>
+      <div class="reel-noise"></div>
+      <div class="reel-geom"></div>
+      <div class="reel-play">▶</div>
+      <div class="reel-content">
+        <div class="reel-tag">#MZMove</div>
+        <div class="reel-title">Florbalový Turnaj v Akcii</div>
+      </div>
+    </div>
+    <div class="reel-card">
+      <div class="reel-gradient"></div>
+      <div class="reel-noise"></div>
+      <div class="reel-play">▶</div>
+      <div class="reel-content">
+        <div class="reel-tag">#MZLove</div>
+        <div class="reel-title">Speed Dating Večer — Jar 2024</div>
+      </div>
+    </div>
+    <div class="reel-card">
+      <div class="reel-gradient"></div>
+      <div class="reel-noise"></div>
+      <div class="reel-play">▶</div>
+      <div class="reel-content">
+        <div class="reel-tag">#Afterparty</div>
+        <div class="reel-title">MZ Afterparty — Záchranná Brzda</div>
+      </div>
+    </div>
+    <div class="reel-card">
+      <div class="reel-gradient"></div>
+      <div class="reel-noise"></div>
+      <div class="reel-play">▶</div>
+      <div class="reel-content">
+        <div class="reel-tag">#KatalógEnergie</div>
+        <div class="reel-title">Atrakcie a Programy 2024</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════
+     4. ROK PLNÝ ZÁBAVY — Mesačný plánovač
+     ══════════════════════════════════════════════════════ -->
+<section id="rok">
+  <div class="section-header reveal">
+    <div class="section-label-orbit">// PLÁNOVAČ ZÁBAVY //</div>
+    <h2 class="section-title">ROK PLNÝ ZÁBAVY</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="planner-grid reveal">
+    <div class="month-card"><div class="month-num">01</div><div class="month-name">Január</div>   <div class="month-event"><span class="month-dot"></span>Novoročné Eventy</div></div>
+    <div class="month-card"><div class="month-num">02</div><div class="month-name">Február</div>  <div class="month-event"><span class="month-dot" style="background:var(--pink)"></span>MZ LOVE Special</div></div>
+    <div class="month-card"><div class="month-num">03</div><div class="month-name">Marec</div>    <div class="month-event"><span class="month-dot" style="background:var(--cyan)"></span>Jarný Team-building</div></div>
+    <div class="month-card"><div class="month-num">04</div><div class="month-name">Apríl</div>    <div class="month-event"><span class="month-dot"></span>Outdoor Florbal Liga</div></div>
+    <div class="month-card"><div class="month-num">05</div><div class="month-name">Máj</div>      <div class="month-event"><span class="month-dot" style="background:var(--pink)"></span>Firemné Pikniky</div></div>
+    <div class="month-card"><div class="month-num">06</div><div class="month-name">Jún</div>      <div class="month-event"><span class="month-dot" style="background:var(--cyan)"></span>Letné Afterparty</div></div>
+    <div class="month-card"><div class="month-num">07</div><div class="month-name">Júl</div>      <div class="month-event"><span class="month-dot"></span>Festival Zábavy</div></div>
+    <div class="month-card"><div class="month-num">08</div><div class="month-name">August</div>   <div class="month-event"><span class="month-dot" style="background:var(--cyan)"></span>Vodné Eventy</div></div>
+    <div class="month-card"><div class="month-num">09</div><div class="month-name">September</div><div class="month-event"><span class="month-dot"></span>Jesenný Speed Dating</div></div>
+    <div class="month-card"><div class="month-num">10</div><div class="month-name">Október</div>  <div class="month-event"><span class="month-dot" style="background:var(--pink)"></span>Halloween Špeciál</div></div>
+    <div class="month-card"><div class="month-num">11</div><div class="month-name">November</div> <div class="month-event"><span class="month-dot"></span>Indoor Turnaje</div></div>
+    <div class="month-card"><div class="month-num">12</div><div class="month-name">December</div> <div class="month-event"><span class="month-dot" style="background:var(--violet)"></span>Vianočné Galas</div></div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════
+     5. PROJEKTY MZ — Vlajkové projekty
+     ══════════════════════════════════════════════════════ -->
+<section id="projekty">
+  <div class="section-header reveal">
+    <div class="section-label-orbit">// VLAJKOVÉ PROJEKTY //</div>
+    <h2 class="section-title">PROJEKTY MZ</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="projects-grid reveal">
+    <!-- Hlavná (veľká) karta -->
+    <div class="project-card featured">
+      <div class="project-number">01</div>
+      <div class="project-visual">
+        <div class="project-visual-inner">⚡</div>
+        <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(123,47,255,0.1),rgba(0,212,255,0.05));"></div>
+      </div>
+      <div class="project-category">Produkcia Eventov</div>
+      <div class="project-name">EVENTY NA KĽÚČ</div>
+      <div class="project-desc">Komplexná produkcia podujatí od A po Z. Firemné akcie, team-buildingy, galavečery, konferencie — všetko s presnosťou veliteľského centra zábavy.</div>
+      <div class="project-tags">
+        <span class="tag">Korporát</span>
+        <span class="tag">Team-building</span>
+        <span class="tag">Galavečer</span>
+        <span class="tag">Outdoor</span>
+      </div>
+    </div>
+    <div class="project-card">
+      <div class="project-number">02</div>
+      <div class="project-category">Šport & Pohyb</div>
+      <div class="project-name">MZ MOVE</div>
+      <div class="project-desc">Aktívne programy, florbalové turnaje a pohybové eventy pre tímy.</div>
+      <div class="project-tags"><span class="tag">Florbal</span><span class="tag">Šport</span></div>
+    </div>
+    <div class="project-card">
+      <div class="project-number">03</div>
+      <div class="project-category">Sociálne Spojenia</div>
+      <div class="project-name">MZ LOVE</div>
+      <div class="project-desc">Speed dating eventy a zoznamovacie podujatia s prémiovou atmosférou.</div>
+      <div class="project-tags"><span class="tag">Speed Dating</span><span class="tag">Networking</span></div>
+    </div>
+    <div class="project-card">
+      <div class="project-number">04</div>
+      <div class="project-category">Katalóg Atrakcií</div>
+      <div class="project-name">KATALÓG ENERGIE</div>
+      <div class="project-desc">Databáza programov, atrakcií a modulárnych riešení pre každú príležitosť.</div>
+      <div class="project-tags"><span class="tag">Atrakcie</span><span class="tag">Programy</span></div>
+    </div>
+    <div class="project-card">
+      <div class="project-number">05</div>
+      <div class="project-category">Záchranná Brzda</div>
+      <div class="project-name">MZ AFTERPARTY</div>
+      <div class="project-desc">Rýchle riešenia a afterparty produkcia. Keď treba zachrániť večer.</div>
+      <div class="project-tags"><span class="tag">Afterparty</span><span class="tag">Emergency</span></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════
+     6. MAJSTROVSKÝ MOZOG — AI Event Planner
+     Logika planéra je v js/mozog.js
+     ══════════════════════════════════════════════════════ -->
+<section id="mozog-section">
+  <div class="section-header reveal">
+    <div class="section-label-orbit">// AI EVENT INTELLIGENCE //</div>
+    <h2 class="section-title">MAJSTROVSKÝ MOZOG</h2>
+    <div class="section-line"></div>
+    <p style="color:var(--grey);font-size:15px;margin-top:16px;letter-spacing:1px;">Navrhnúť dokonalý event za 10 sekúnd</p>
+  </div>
+
+  <div style="text-align:center;margin-bottom:32px;">
+    <a href="#orbit-section" class="back-to-orbit">
+      <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M8 1L2 7l6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Späť do Orbitu
+    </a>
+  </div>
+
+  <div class="mozog-wrapper">
+    <div class="mozog-header-badge">
+      <div class="badge-dot"></div>
+      <span class="badge-text">AI // Event Intelligence v2.0</span>
+    </div>
+
+    <div class="mozog-card" id="mozogCard">
+      <div class="card-border">
+        <div class="card-inner">
+
+          <!-- Horná lišta karty -->
+          <div class="top-bar">
+            <div class="logo-section">
+              <svg class="brain-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 6C13.4 6 8 11.4 8 18c0 3.5 1.4 6.7 3.7 9l-.7 5 4.5-1.5C16.9 31.5 18.4 32 20 32c6.6 0 12-5.4 12-12S26.6 6 20 6z" fill="url(#bg1)" opacity="0.9"/>
+                <path d="M14 17c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm8 0c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2z" fill="rgba(255,255,255,0.9)"/>
+                <path d="M15 24c1.3 1.2 3 2 5 2s3.7-.8 5-2" stroke="rgba(255,255,255,0.8)" stroke-width="1.5" stroke-linecap="round"/>
+                <defs>
+                  <linearGradient id="bg1" x1="8" y1="6" x2="32" y2="32">
+                    <stop offset="0%" stop-color="#b44dff"/>
+                    <stop offset="100%" stop-color="#4d9fff"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div class="logo-text">
+                <span class="logo-main">MAJSTROVSKÝ MOZOG</span>
+                <span class="logo-sub">Digital Event Intelligence</span>
+              </div>
+            </div>
+            <div class="status-pill">
+              <div class="status-dot"></div>
+              <span class="status-text">ONLINE</span>
+            </div>
+          </div>
+
+          <!-- Intro text -->
+          <div class="intro-section">
+            <div class="intro-tagline">// Zverte mi váš chaos, ja vám dám plán.</div>
+            <div class="intro-headline">Navrhujem <span>dokonalý event</span><br>za 10 sekúnd.</div>
+          </div>
+
+          <!-- FORMULÁR PLANÉRA -->
+          <div class="planner-section" id="plannerSection">
+            <div class="mozog-section-label">Smart Planner</div>
+            <div class="form-grid">
+
+              <!-- Typ akcie -->
+              <div class="form-group">
+                <label class="form-label" for="eventType">Typ akcie</label>
+                <select class="form-select" id="eventType">
+                  <option value="">Vyber typ akcie...</option>
+                  <option value="firemny">🏢 Firemný event</option>
+                  <option value="svadba">💍 Svadba / Oslava</option>
+                  <option value="narozeniny">🎂 Narodeninová párty</option>
+                  <option value="teambuilding">⚡ Teambuilding</option>
+                  <option value="koncert">🎵 Koncert / Show</option>
+                  <option value="detsky">🎪 Detský event</option>
+                  <option value="gala">✨ Galavečer</option>
+                </select>
+              </div>
+
+              <!-- Rozpočet slider -->
+              <div class="form-group">
+                <label class="form-label">Rozpočet (€)</label>
+                <div class="budget-slider-wrap">
+                  <div class="budget-top-row">
+                    <span class="budget-amount" id="budgetAmount">500 €</span>
+                    <span class="budget-zone-pill" id="budgetZonePill">● Zlatý stred</span>
+                  </div>
+                  <div class="budget-track-wrap">
+                    <input type="range" id="budgetSlider" min="0" max="3000" value="500" step="25">
+                    <div class="budget-zone-bar">
+                      <div class="bz bz-low"  title="pod 250 €">DOPLNKY</div>
+                      <div class="bz bz-mid"  title="250–1000 €">NA MIERU</div>
+                      <div class="bz bz-high" title="nad 1000 €">PRODUKCIA</div>
+                    </div>
+                  </div>
+                  <div class="budget-tooltip" id="budgetTooltip">Zlatý stred</div>
+                </div>
+              </div>
+
+              <!-- Počet hostí slider -->
+              <div class="form-group full">
+                <label class="form-label">Počet hostí</label>
+                <div class="range-wrap">
+                  <span class="range-value" id="rangeVal">50 osôb</span>
+                  <input type="range" id="guestCount" min="10" max="1000" value="50" step="10">
+                  <div class="range-labels">
+                    <span>10</span><span>250</span><span>500</span><span>750</span><span>1000+</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Priorita atmosféry -->
+              <div class="form-group full">
+                <label class="form-label">Priorita atmosféry</label>
+                <div class="priority-grid">
+                  <button type="button" class="priority-btn" data-value="energia"  onclick="selectPriority(this)">
+                    <span class="priority-emoji">⚡</span>
+                    <span class="priority-label">Energia &amp; Adrenalín</span>
+                  </button>
+                  <button type="button" class="priority-btn" data-value="elegancia" onclick="selectPriority(this)">
+                    <span class="priority-emoji">💎</span>
+                    <span class="priority-label">Luxus &amp; Elegancia</span>
+                  </button>
+                  <button type="button" class="priority-btn" data-value="pohoda"   onclick="selectPriority(this)">
+                    <span class="priority-emoji">🌿</span>
+                    <span class="priority-label">Rodinná Pohoda</span>
+                  </button>
+                </div>
+              </div>
+
+            </div><!-- /form-grid -->
+
+            <div class="generate-wrap">
+              <button type="button" class="generate-btn" id="generateBtn" onclick="generatePlan()">
+                <span>GENEROVAŤ MOŽNOSTI</span>
+                <span class="btn-arrow">→</span>
+              </button>
+              <div class="error-hint" id="errorHint">⚠ Vyber typ akcie a prioritu atmosféry</div>
+            </div>
+          </div><!-- /plannerSection -->
+
+          <!-- Thinking animácia (zobrazí sa počas generovania) -->
+          <div class="thinking-overlay" id="thinkingOverlay">
+            <div class="thinking-dots">
+              <div class="thinking-dot"></div>
+              <div class="thinking-dot"></div>
+              <div class="thinking-dot"></div>
+            </div>
+            <div class="thinking-label" id="thinkingLabel">Analyzujem požiadavky...</div>
+            <div class="progress-bar"><div class="progress-fill"></div></div>
+          </div>
+
+          <!-- Výsledok (zobrazí sa po vygenerovaní) -->
+          <div class="result-section" id="resultSection">
+            <div class="result-label">Môj návrh pre vás</div>
+            <div class="ai-message" id="aiMessage">
+              <span id="aiText"></span>
+              <span class="cursor-blink" id="cursorEl" style="display:none;"></span>
+            </div>
+            <div class="modules-grid"  id="modulesGrid"></div>
+            <div class="summary-bar"   id="summaryBar"></div>
+            <div class="cta-row" id="ctaRow" style="display:grid;">
+              <button type="button" class="cta-approve" onclick="approvePlan()">✓ Schváliť plán &amp; kontaktovať</button>
+              <button type="button" class="cta-reset"   onclick="resetPlan()">↺ Reset</button>
+            </div>
+          </div>
+
+          <!-- Spodná lišta karty -->
+          <div class="card-footer">
+            <span class="footer-left">MZ // DIGITAL EVENT INTELLIGENCE</span>
+            <span class="footer-right"><div class="api-dot"></div>AI POWERED</span>
+          </div>
+
+        </div><!-- /card-inner -->
+      </div><!-- /card-border -->
+    </div><!-- /mozog-card -->
+  </div><!-- /mozog-wrapper -->
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════
+     7. KONTAKT
+     ══════════════════════════════════════════════════════ -->
+<section id="kontakt">
+  <div class="contact-wrapper reveal">
+    <h2 class="contact-mega">POĎME<br><span>TVORIŤ SPOLU</span></h2>
+    <p class="contact-sub">Máš projekt, víziu alebo len potrebuješ poradu? Sme veliteľské centrum zábavy — vždy online.</p>
+    <div class="contact-channels">
+      <a href="mailto:info@majstrizabavy.sk" class="contact-channel">
+        <span class="channel-icon">✉️</span>
+        <span class="channel-name">Email</span>
+      </a>
+      <a href="https://instagram.com" target="_blank" class="contact-channel">
+        <span class="channel-icon">📸</span>
+        <span class="channel-name">Instagram</span>
+      </a>
+      <a href="tel:+421900000000" class="contact-channel">
+        <span class="channel-icon">📞</span>
+        <span class="channel-name">Telefón</span>
+      </a>
+      <a href="#" class="contact-channel">
+        <span class="channel-icon">💬</span>
+        <span class="channel-name">Facebook</span>
+      </a>
+    </div>
+    <div style="margin-top:48px">
+      <a href="mailto:info@majstrizabavy.sk" class="btn-primary">⚡ Spustiť Projekt</a>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════
+     FOOTER
+     ══════════════════════════════════════════════════════ -->
+<footer>
+  <div class="footer-logo">MAJSTRI ZÁBAVY</div>
+  <div class="footer-copy">© 2025 MZ ORBIT — Autorita zábavy</div>
+  <ul class="footer-links">
+    <li><a href="#">Privacy</a></li>
+    <li><a href="#">Podmienky</a></li>
+    <li><a href="#kontakt">Kontakt</a></li>
+  </ul>
+</footer>
+
+
+<!--
+  ============================================================
+  JAVASCRIPT SÚBORY
+  DÔLEŽITÉ: Musia byť na konci stránky (pred </body>)
+  Poradie záleží:
+  1. orbit.js   — animácia planét (nezávisí na ničom)
+  2. mozog.js   — logika planéra (nezávisí na ničom)
+  3. main.js    — kurzor, scroll, command bar (musí byť posledný,
+                  lebo hľadá planéty ktoré vytvoril orbit.js)
+  ============================================================
+-->
+<script src="js/orbit.js"></script>
+<script src="js/mozog.js"></script>
+<script src="js/main.js"></script>
+
+</body>
+</html>
